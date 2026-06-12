@@ -1,0 +1,11 @@
+# Banco de dados local
+devops_monitor.db
+
+# Caches do Python
+__pycache__/
+*.pyc
+
+# Ambientes virtuais (caso crie algum)
+.venv/
+venv/
+env/

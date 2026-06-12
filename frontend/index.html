@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetWatch — Plataforma de Monitoramento DevOps</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#111827',
+            surface: '#1f2937',
+            card:    '#1f2937',
+            border:  '#374151',
+            ok:      '#10b981',
+            warn:    '#f59e0b',
+            crit:    '#ef4444',
+            info:    '#3b82f6',
+          }
+        }
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+
+<body class="bg-bg text-gray-100 min-h-screen font-sans antialiased">
+
+  <!-- ── TOP NAV ── -->
+  <header class="sticky top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-sm">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="netwatch-logo">
+          <span class="logo-pulse"></span>
+        </span>
+        <span class="text-white font-semibold tracking-wide text-lg">NetWatch</span>
+        <span class="hidden sm:inline text-xs text-gray-500 font-mono">/ monitoramento de rede</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div id="last-update" class="text-xs text-gray-500 font-mono hidden sm:block">atualizando…</div>
+        <span id="conn-badge" class="status-badge badge-ok">Conectado</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+    <!-- ══════════════════════════════════════
+         SEÇÃO 1 — VISÃO CONSOLIDADA
+    ══════════════════════════════════════ -->
+    <section>
+      <h2 class="section-title">
+        <span class="section-dot bg-info"></span>
+        Visão Consolidada
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <!-- Web Server -->
+        <div id="card-web" class="service-card" data-service="web">
+          <div class="service-card-header">
+            <div class="service-icon-wrap bg-blue-500/10 text-blue-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-widest">Web Server</p>
+              <p class="text-sm font-medium text-gray-200">HTTP / HTTPS</p>
+            </div>
+            <span id="badge-web" class="status-badge badge-ok ml-auto">OK</span>
+          </div>
+          <div class="service-card-metrics">
+            <div class="metric-pill">
+              <span class="metric-label">Latência</span>
+              <span id="web-latency" class="metric-value">— ms</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">RPS</span>
+              <span id="web-rps" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Erro</span>
+              <span id="web-error" class="metric-value">— %</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Conexões</span>
+              <span id="web-conn" class="metric-value">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banco de Dados -->
+        <div id="card-db" class="service-card" data-service="db">
+          <div class="service-card-header">
+            <div class="service-icon-wrap bg-purple-500/10 text-purple-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7c0-1.657 3.582-3 8-3s8 1.343 8 3M4 7v5c0 1.657 3.582 3 8 3s8-1.343 8-3V7M4 7c0 1.657 3.582 3 8 3s8-1.343 8-3M4 17v-5m16 5v-5M4 17c0 1.657 3.582 3 8 3s8-1.343 8-3"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-widest">Banco de Dados</p>
+              <p class="text-sm font-medium text-gray-200">SQL / NoSQL</p>
+            </div>
+            <span id="badge-db" class="status-badge badge-ok ml-auto">OK</span>
+          </div>
+          <div class="service-card-metrics">
+            <div class="metric-pill">
+              <span class="metric-label">CPU</span>
+              <span id="db-cpu" class="metric-value">— %</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">QPS</span>
+              <span id="db-qps" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Slow Q</span>
+              <span id="db-slow" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Tamanho</span>
+              <span id="db-size" class="metric-value">— GB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DNS -->
+        <div id="card-dns" class="service-card" data-service="dns">
+          <div class="service-card-header">
+            <div class="service-icon-wrap bg-teal-500/10 text-teal-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-widest">DNS</p>
+              <p class="text-sm font-medium text-gray-200">Resolução de Nomes</p>
+            </div>
+            <span id="badge-dns" class="status-badge badge-ok ml-auto">OK</span>
+          </div>
+          <div class="service-card-metrics">
+            <div class="metric-pill">
+              <span class="metric-label">Resp.</span>
+              <span id="dns-resp" class="metric-value">— ms</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">QPS</span>
+              <span id="dns-qps" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Falhas</span>
+              <span id="dns-fail" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Uptime</span>
+              <span id="dns-up" class="metric-value">— %</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMTP -->
+        <div id="card-smtp" class="service-card" data-service="smtp">
+          <div class="service-card-header">
+            <div class="service-icon-wrap bg-orange-500/10 text-orange-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-widest">SMTP</p>
+              <p class="text-sm font-medium text-gray-200">E-mail</p>
+            </div>
+            <span id="badge-smtp" class="status-badge badge-ok ml-auto">OK</span>
+          </div>
+          <div class="service-card-metrics">
+            <div class="metric-pill">
+              <span class="metric-label">Entrega</span>
+              <span id="smtp-delivery" class="metric-value">— %</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Fila</span>
+              <span id="smtp-queue" class="metric-value">—</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Latência</span>
+              <span id="smtp-lat" class="metric-value">— ms</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-label">Erros</span>
+              <span id="smtp-err" class="metric-value">— %</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SEÇÃO 2 — DASHBOARDS POR SERVIÇO
+    ══════════════════════════════════════ -->
+    <section>
+      <h2 class="section-title">
+        <span class="section-dot bg-purple-500"></span>
+        Dashboards por Serviço
+      </h2>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+        <!-- Web Server Chart -->
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span class="chart-label text-blue-400">Web Server — Latência & RPS</span>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span class="legend-dot bg-blue-400"></span>Latência (ms)
+              <span class="legend-dot bg-emerald-400"></span>RPS
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-web"></canvas>
+          </div>
+          <div class="chart-stats">
+            <div class="chart-stat"><span class="chart-stat-label">Latência</span><span id="cs-web-lat" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">RPS</span><span id="cs-web-rps" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Conexões</span><span id="cs-web-conn" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">4xx/5xx</span><span id="cs-web-err" class="chart-stat-val">—</span></div>
+          </div>
+        </div>
+
+        <!-- DB Chart -->
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span class="chart-label text-purple-400">Banco de Dados — CPU & QPS</span>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span class="legend-dot bg-purple-400"></span>CPU (%)
+              <span class="legend-dot bg-pink-400"></span>QPS
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-db"></canvas>
+          </div>
+          <div class="chart-stats">
+            <div class="chart-stat"><span class="chart-stat-label">CPU</span><span id="cs-db-cpu" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Memória</span><span id="cs-db-mem" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">QPS</span><span id="cs-db-qps" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Conexões</span><span id="cs-db-conn" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Slow Queries</span><span id="cs-db-slow" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Rollbacks/Erros</span><span id="cs-db-err" class="chart-stat-val">—</span></div>
+              <div class="chart-stat"><span class="chart-stat-label">Tamanho</span><span id="cs-db-size" class="chart-stat-val">—</span></div>
+</div>
+        </div>
+
+        <!-- DNS Chart -->
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span class="chart-label text-teal-400">DNS — Tempo de Resposta</span>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span class="legend-dot bg-teal-400"></span>Resp. (ms)
+              <span class="legend-dot bg-yellow-400"></span>Falhas/s
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-dns"></canvas>
+          </div>
+          <div class="chart-stats">
+            <div class="chart-stat"><span class="chart-stat-label">Resposta</span><span id="cs-dns-resp" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">QPS</span><span id="cs-dns-qps" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Falhas</span><span id="cs-dns-fail" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Uptime</span><span id="cs-dns-up" class="chart-stat-val">—</span></div>
+          </div>
+        </div>
+
+        <!-- SMTP Chart -->
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span class="chart-label text-orange-400">SMTP — Taxa de Entrega & Fila</span>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span class="legend-dot bg-orange-400"></span>Entrega (%)
+              <span class="legend-dot bg-red-400"></span>Fila
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-smtp"></canvas>
+        </div>
+          <div class="chart-stats">
+            <div class="chart-stats">
+            <div class="chart-stat"><span class="chart-stat-label">Entrega</span><span id="cs-smtp-del" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Fila</span><span id="cs-smtp-q" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Latência</span><span id="cs-smtp-lat" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Taxa Erros</span><span id="cs-smtp-err" class="chart-stat-val">—</span></div>
+            <div class="chart-stat"><span class="chart-stat-label">Vol / Min</span><span id="cs-smtp-vol" class="chart-stat-val">—</span></div>
+          </div>
+      </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SEÇÃO 3 — PAINEL DE SEGURANÇA
+    ══════════════════════════════════════ -->
+    <section>
+      <h2 class="section-title">
+        <span class="section-dot bg-red-500"></span>
+        Painel de Segurança
+        <span id="sec-count" class="ml-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-full px-2 py-0.5 font-mono">0</span>
+      </h2>
+
+      <!-- Security summary cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <div class="sec-summary-card">
+          <div class="sec-sum-icon text-red-400 bg-red-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div>
+            <p class="text-gray-400 text-xs">Anomalias DDoS</p>
+            <p id="sec-cnt-ddos" class="text-white text-xl font-semibold">0</p>
+          </div>
+        </div>
+        <div class="sec-summary-card">
+          <div class="sec-sum-icon text-yellow-400 bg-yellow-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <div>
+            <p class="text-gray-400 text-xs">Brute-force</p>
+            <p id="sec-cnt-brute" class="text-white text-xl font-semibold">0</p>
+          </div>
+        </div>
+        <div class="sec-summary-card">
+          <div class="sec-sum-icon text-blue-400 bg-blue-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <p class="text-gray-400 text-xs">Config. Alterada</p>
+            <p id="sec-cnt-cfg" class="text-white text-xl font-semibold">0</p>
+          </div>
+        </div>
+        <div class="sec-summary-card">
+          <div class="sec-sum-icon text-purple-400 bg-purple-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <p class="text-gray-400 text-xs">Vulnerabilidades</p>
+            <p id="sec-cnt-vuln" class="text-white text-xl font-semibold">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert feed table -->
+      <div class="sec-table-wrap">
+        <div class="sec-table-header">
+          <span class="text-xs text-gray-400 font-medium">Feed de Alertas de Segurança</span>
+          <button onclick="refreshSecurityFeed()" class="text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Atualizar
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="sec-thead-row">
+                <th class="sec-th">Nível</th>
+                <th class="sec-th">Categoria</th>
+                <th class="sec-th">Serviço</th>
+                <th class="sec-th">Descrição</th>
+                <th class="sec-th">Origem IP</th>
+                <th class="sec-th">Horário</th>
+              </tr>
+            </thead>
+            <tbody id="sec-feed">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="border-t border-border mt-10 py-5 text-center text-xs text-gray-600">
+    NetWatch — IDP · Disciplina de Redes de Computadores · Prof.ª Lorena Borges · 2026
+  </footer>
+
+  <script src="src/dashboard.js"></script>
+</body>
+</html>

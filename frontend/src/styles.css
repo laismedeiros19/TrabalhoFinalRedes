@@ -1,0 +1,484 @@
+/* ─────────────────────────────────────────
+   NetWatch — styles.css
+   Dark-mode DevOps dashboard styles
+   ───────────────────────────────────────── */
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #111827;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Logo ── */
+.netwatch-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  position: relative;
+}
+
+.logo-pulse {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.logo-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  animation: logo-glow 2.5s ease-in-out infinite;
+  opacity: 0;
+}
+
+@keyframes logo-glow {
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.15); }
+}
+
+/* ── Section header ── */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #d1d5db;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.section-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Status badges ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.badge-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  animation: badge-flash-warn 1.5s ease-in-out infinite;
+}
+
+.badge-crit {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  animation: badge-flash-crit 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes badge-flash-warn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  50%       { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15); }
+}
+
+@keyframes badge-flash-crit {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); background: rgba(239,68,68,0.12); }
+  50%       { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.2); background: rgba(239,68,68,0.22); }
+}
+
+/* ── Service cards (Seção 1) ── */
+.service-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: #374151;
+  transition: background 0.3s ease;
+}
+
+.service-card.status-ok::before    { background: #10b981; }
+.service-card.status-warn::before  { background: #f59e0b; }
+.service-card.status-crit::before  {
+  background: #ef4444;
+  animation: crit-stripe 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes crit-stripe {
+  from { opacity: 1; }
+  to   { opacity: 0.5; }
+}
+
+.service-card.status-warn { border-color: rgba(245,158,11,0.25); }
+.service-card.status-crit { border-color: rgba(239,68,68,0.35); box-shadow: 0 0 0 1px rgba(239,68,68,0.2); }
+
+.service-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.875rem;
+}
+
+.service-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.service-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.metric-pill {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 7px;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.metric-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  color: #e5e7eb;
+  transition: color 0.3s ease;
+}
+
+.metric-value.val-warn { color: #f59e0b; }
+.metric-value.val-crit { color: #ef4444; }
+
+/* ── Chart cards (Seção 2) ── */
+.chart-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chart-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chart-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 170px;
+  width: 100%;
+}
+
+.chart-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chart-stat {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 7px;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 70px;
+}
+
+.chart-stat-label {
+  font-size: 0.65rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.chart-stat-val {
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  color: #e5e7eb;
+  margin-top: 2px;
+  transition: color 0.3s ease;
+}
+
+/* ── Security panel (Seção 3) ── */
+.sec-summary-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sec-sum-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.sec-table-wrap {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sec-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #374151;
+  background: #111827;
+}
+
+.sec-thead-row th {
+  padding: 0.625rem 1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #161e2e;
+  border-bottom: 1px solid #374151;
+  white-space: nowrap;
+}
+
+.sec-th:first-child { padding-left: 1.25rem; }
+
+.sec-row {
+  border-bottom: 1px solid #1f2937;
+  transition: background 0.15s ease;
+  animation: row-slide-in 0.35s ease forwards;
+}
+
+.sec-row:hover { background: #1a2234; }
+.sec-row:last-child { border-bottom: none; }
+
+@keyframes row-slide-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.sec-td {
+  padding: 0.625rem 1rem;
+  font-size: 0.78rem;
+  color: #d1d5db;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.sec-td:first-child { padding-left: 1.25rem; }
+
+.sec-td-desc {
+  padding: 0.625rem 1rem;
+  font-size: 0.78rem;
+  color: #d1d5db;
+  vertical-align: middle;
+  max-width: 280px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Security severity badges */
+.sec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.sec-badge-crit {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+
+.sec-badge-warn {
+  background: rgba(245,158,11,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+.sec-badge-info {
+  background: rgba(59,130,246,0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59,130,246,0.3);
+}
+
+/* Category chip */
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cat-ddos   { background: rgba(239,68,68,0.1);   color: #fca5a5; }
+.cat-brute  { background: rgba(245,158,11,0.1);  color: #fcd34d; }
+.cat-config { background: rgba(59,130,246,0.1);  color: #93c5fd; }
+.cat-vuln   { background: rgba(168,85,247,0.1);  color: #c4b5fd; }
+
+/* IP monospace */
+.ip-mono {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+/* Time mono */
+.time-mono {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+/* ── Empty state ── */
+.empty-row td {
+  text-align: center;
+  padding: 2rem;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+/* ── Connection lost overlay ── */
+.conn-lost-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(239,68,68,0.9);
+  color: #fff;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 100;
+  display: none;
+  backdrop-filter: blur(4px);
+  animation: slide-up 0.3s ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Responsive tweaks ── */
+@media (max-width: 640px) {
+  .chart-stats { gap: 4px; }
+  .chart-stat  { min-width: 60px; }
+  .sec-thead-row th:nth-child(5) { display: none; }
+  .sec-td:nth-child(5) { display: none; }
+}
