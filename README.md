@@ -1,125 +1,93 @@
-# NetWatch — Plataforma Integrada de Telemetria, Alertas e Auditoria de Redes
+# 🌐 NetWatch — Plataforma de Monitoramento de Rede e Resposta a Incidentes
 
-A plataforma **NetWatch** é uma solução completa de monitoramento distribuído focada na análise de performance de ativos corporativos e na auditoria ativa de eventos de segurança cibernética. Este projeto foi desenvolvido como requisito avaliativo prático final para a disciplina de **Redes de Computadores I**, no **Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP)** em Brasília.
-
----
-
-## 🏗️ 1. Arquitetura da Solução e Estrutura de Arquivos
-
-O ecossistema adota o padrão arquitetural de **Sistemas Distribuídos Baseados em Eventos**, operando de forma totalmente desacoplada em três camadas independentes:
-
-```text
-📂 TrabalhoFinalRedes (Raiz do Repositório)
-├── 📂 agents
-│   └── 📄 monitor.py             # Agente autônomo de coleta e telemetria de infraestrutura
-├── 📂 backend
-│   └── 📂 app
-│       ├── 📄 database.py        # Configuração do engine e sessão do banco SQLite
-│       ├── 📄 main.py            # Endpoints da API FastAPI e Motor de Regras de Alerta
-│       └── 📄 models.py          # Modelos relacionais (Métricas e Eventos de Segurança)
-├── 📂 frontend
-│   ├── 📄 index.html             # Estrutura visual e painéis reativos do Dashboard
-│   └── 📂 src
-│       ├── 📄 dashboard.js       # Polling assíncrono, Chart.js e manipulação dinâmica do DOM
-│       └── 📄 styles.css         # Identidade visual avançada baseada em Dark Mode
-├── 📄 .gitignore                 # Filtro de exclusão de binários locais e cache
-├── 📄 architecture.md            # Detalhamento técnico estrutural do ecossistema
-└── 📄 requirements.txt           # Dependências obrigatórias do ecossistema Python
-```
-
-### Divisão de Responsabilidades
-
-- **Agente de Coleta (`agents/monitor.py`):** Script independente encarregado de interagir com APIs do sistema operacional e sockets de rede, empacotando telemetrias estruturadas em JSON e despachando-as via requisições HTTP REST (POST).
-
-- **Backend Engine (`backend/app/`):** API construída sobre o ecossistema de alta performance FastAPI. Recebe os fluxos de dados, submete as variáveis ao mecanismo interno de avaliação de limites operacionais (thresholds) e persiste os registros em um banco relacional local SQLite via SQLAlchemy ORM.
-
-- **Front-end Reativo (`frontend/`):** Interface web construída puramente com linguagens nativas (HTML5, CSS3, JS Vanilla). Consome assincronamente as rotas do backend por meio de requisições estruturadas com a Fetch API em ciclos de polling de 5 segundos, populando dinamicamente gráficos de linhas temporais com a biblioteca Chart.js.
+**Contexto Acadêmico:** Instituto de Desenvolvimento e Pesquisa (IDP)
+**Disciplina:** Redes de Computadores
+**Orientadora:** Prof.ª Lorena Borges
+**Alunas:** Lais Medeiros e Gabriela Suares
+**Ano:** 2026
 
 ---
 
-## 📊 2. Monitoramento de Métricas por Serviço
+## 📝 Descrição do Projeto
 
-Em total conformidade com as diretrizes do projeto, o sistema inspeciona ativamente quatro pilares de infraestrutura fundamentais:
-
-### 🌐 2.1 Web Server (HTTP/HTTPS)
-
-- **Disponibilidade:** Verificação ativa de resposta de sockets de aplicação (HTTP Status Check).
-- **Requests por Segundo (RPS):** Volume total de requisições concorrentes processadas por segundo.
-- **Latência:** Tempo de ida e volta do pacote (Round-Trip Time - RTT) aferido em milissegundos (ms).
-- **Taxa de Erros:** Percentual de respostas de falha na camada de aplicação (famílias HTTP 4xx e 5xx).
-- **Conexões Ativas:** Mapeamento de conexões simultâneas concorrentes ativas estabelecidas no host.
-
-### 🗄️ 2.2 Banco de Dados (SQL/NoSQL)
-
-- **Disponibilidade / QPS:** Monitoramento de consultas por segundo processadas pela engine relacional.
-- **Métricas do Host (CPU e Memória):** Coleta em tempo real do consumo de hardware obtidos nativamente via biblioteca `psutil`.
-- **Queries Lentas (Slow Queries) / Erros:** Rastreamento de transações falhas, rollbacks e timeouts estruturais.
-- **Armazenamento:** Tamanho volumétrico ocupado fisicamente em disco mensurado em Gigabytes (GB).
-
-### 🔍 2.3 Servidor de Nomes (DNS)
-
-- **Tempo de Resposta:** Tempo gasto para efetuar uma resolução de nomes UDP ativa na porta 53 contra servidores de borda (8.8.8.8).
-- **Taxa de Falhas:** Mapeamento de erros de tradução ou expiração de timeouts de requisição (failed resolutions).
-
-### 📧 2.4 Serviço de Mensageria (SMTP)
-
-- **Taxa de Entrega:** Eficiência percentual de despachos de mensagens processados com sucesso.
-- **Fila de E-mails (Queue Length):** Backlog acumulativo de mensagens aguardando liberação nos buffers de saída.
+O **NetWatch** é um ecossistema de telemetria e monitoramento de infraestrutura distribuída em tempo real. O sistema foi projetado para coletar, persistir e renderizar métricas vitais de quatro serviços essenciais de rede (Web Server, Banco de Dados, DNS e SMTP), além de atuar ativamente na auditoria de segurança e resposta automatizada a incidentes (NOC/SOC Alerting) via simulação de envelopes de rede do protocolo SMTP.
 
 ---
 
-## 🚦 3. Mecanismo de Alertas e Notificações
+## 🏗️ Arquitetura e Engenharia do Sistema
 
-O backend possui uma engrenagem de auditoria analítica que intercepta cada payload inserido e classifica os estados do sistema em três níveis rigorosos:
+O projeto é dividido em três camadas principais operando de forma assíncrona:
 
-| Nível | Status | Descrição |
-|-------|--------|-----------|
-| 🟢 Nível 1 | **Verde (OK)** | Operação normal e saudável. Os cards do front-end adotam identidade visual padrão estável. |
-| 🟡 Nível 2 | **Amarelo (Atenção)** | Indica flutuação operacional ou degradação parcial (ex: latência excedendo 200ms ou taxa de erro acima de 2%). O front-end destaca o card em modo de observação e o backend emite um log estruturado simulando envio de e-mail de alerta corporativo via SMTP. |
-| 🔴 Nível 3 | **Vermelho (Crítico)** | Indica falha grave generalizada ou total indisponibilidade do ativo (Disponibilidade em 0%). O card do dashboard pisca em vermelho e o motor de regras gera um disparo prioritário de notificação emergencial no terminal. |
+1. **Backend (API REST):** Desenvolvido em **FastAPI (Python)** e estruturado com persistência em banco de dados relacional **SQLite**. Ele expõe endpoints para recebimento de métricas (`/api/metrics`) e logs de segurança (`/api/security`), processando regras de limiares operacionais (*thresholds*).
+2. **Frontend (Dashboard):** Uma interface rica de visualização construída com **HTML5 estrutural, CSS3 (variáveis modernas) e JavaScript Vanilla**. Utiliza a biblioteca **Chart.js** para renderização de gráficos temporais de linhas com eixos dinâmicos reativos.
+3. **Agente (Controlador de Incidentes):** Um script em Python responsável por injetar cargas de telemetria e simular anomalias de redes complexas para validação do ecossistema.
 
 ---
 
-## 🛡️ 4. Painel de Segurança e Monitoramento Extra
+## 🚨 Cenários de Redes e Segurança Simulados
 
-Além da saúde operacional, o ecossistema embarca uma camada integrada de monitoramento contra incidentes e anomalias de segurança cibernética:
+O painel interativo permite injetar 5 estados distintos para avaliar o comportamento do monitoramento:
 
-- **Indicadores de DDoS:** Monitoramento e correlação de picos súbitos de tráfego volumétrico na camada de aplicação (Camada 7).
-- **Detecção de Brute-Force:** Rastreamento de taxas excessivas de falhas de autenticação de usuários por credenciais ou IPs focados no banco de dados.
-- **Auditoria de Configurações:** Mecanismo de checagem automatizada de integridade estrutural através de cruzamento de hashes criptográficos em arquivos vitais (como o `nginx.conf`).
-- **Vulnerabilidades Conhecidas:** Auditoria contínua de CVEs em softwares ativos, incluindo o registro da falha estrutural real **CVE-2023-50387 (KeyTrap)** no escopo do DNS.
+### [1] Estado Normal (Baseline)
+
+- **Comportamento:** Todos os ativos operando nos níveis ideais de SLA. O dashboard renderiza cartões em verde e status `OK`.
+- **Métricas:** Latência Web estável (~45ms), tráfego balanceado e zero falhas.
+
+### [2] Ataque DDoS de Camada 7 (Web Server Flood)
+
+- **Comportamento:** Simulação de um bombardeio volumétrico de requisições maliciosas.
+- **Métricas:** O tráfego de **RPS (Requisições por Segundo)** explode para mais de 95.000, a **Latência** vai ao teto (~4500ms) e a disponibilidade cai para 0, alterando o status do painel para `CRÍTICO`.
+- **Segurança:** Injeta um log de auditoria isolando o IP do atacante.
+
+### [3] Ataque de Força Bruta e Pane Seca (Database Downtime)
+
+- **Comportamento:** Simulação de um ataque *Brute-force* contra o usuário `root` na porta padrão `3306`. O estouro de conexões simultâneas esgota os recursos, derrubando o banco.
+- **Métricas:** **QPS (Consultas por Segundo)** e **Uso de CPU** despencam verticalmente para `0.0`.
+- **Gatilho de Alerta:** O backend detecta a violação do limiar e gera no console o log técnico estruturado do **envelope do protocolo SMTP (RFC 5322)**, simulando a notificação imediata da equipe de suporte.
+
+### [4] Exaustão Criptográfica DNS (CVE-2023-50387 - KeyTrap)
+
+- **Comportamento:** Exploração de uma vulnerabilidade lógica real no protocolo **DNSSEC** dentro do servidor **BIND9**. O envio de assinaturas inválidas cruzadas coloca o processador do servidor em loop infinito.
+- **Métricas:** O tempo de resposta estoura para 5200ms e o gráfico de **Falhas/s** dá um salto vertical na tela.
+
+### [5] Inundação SMTP (Email Bombing / Spam)
+
+- **Comportamento:** Ataque de negação de serviço direcionado ao Mail Transfer Agent (MTA).
+- **Métricas:** A fila de mensagens (*Queue Length*) acumula milhares de e-mails presos, a taxa de entrega legítima cai para `18.5%` e o volume por minuto vai ao topo.
 
 ---
 
-## 🧭 5. Manual de Execução e Deploy Local
+## ⚙️ Como Executar o Projeto (Guia de Implantação)
 
-### Instalação das Dependências
+Para rodar o ecossistema, certifique-se de ter as dependências instaladas (`pip install fastapi uvicorn requests`) e abra **três terminais separados** no seu ambiente de desenvolvimento:
 
-Para instalar as bibliotecas necessárias declaradas no projeto (`fastapi`, `uvicorn`, `sqlalchemy`, `psutil`, `dnspython`), execute:
+### Terminal 1 — Servidor de API (Backend)
 
-```bash
-pip install -r requirements.txt
-```
-
-### Inicialização do Ecossistema em Três Passos
-
-**Passo 1 — API e Banco de Dados (Terminal 1):**
 ```bash
 uvicorn backend.app.main:app --reload --port 8000
 ```
 
-**Passo 2 — Inicialização do Agente Coletor (Terminal 2):**
-```bash
-python3 agents/monitor.py
-```
+> **Nota:** Se estiver utilizando o GitHub Codespaces, altere a visibilidade da porta 8000 para "Pública" na aba **Ports**.
 
-**Passo 3 — Inicialização do Servidor Front-end (Terminal 3):**
+### Terminal 2 — Servidor Web Estático (Frontend)
+
 ```bash
 python3 -m http.server 3000 --directory frontend
 ```
 
-> ⚙️ **Configuração de Proxy no GitHub Codespaces:** Na aba **Portas (Ports)** da sua IDE, selecione a porta `8000` (backend), clique com o botão direito e altere a visibilidade de `Private` para `Public`. Essa etapa é indispensável para que o código JavaScript executado localmente pelo seu navegador web consiga cruzar o proxy seguro e acessar as rotas REST da API.
+### Terminal 3 — Orquestrador de Ataques (Agente)
+
+```bash
+python3 agents/controlador.py
+```
 
 ---
 
-*NetWatch • IDP • 2026*
+## 🛠️ Tecnologias Utilizadas
+
+| Categoria | Tecnologias |
+|---|---|
+| **Linguagens** | Python 3.12, JavaScript (ES6+), HTML5, CSS3 |
+| **Frameworks / Libs** | FastAPI, Uvicorn, Chart.js (v4) |
+| **Banco de Dados** | SQLite (com SQLAlchemy / Driver Nativo) |
+| **Protocolos** | HTTP/HTTPS, SMTP (Transmissão de Alertas), DNS/DNSSEC (Validação de Chaves) |
