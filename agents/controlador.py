@@ -28,6 +28,7 @@ def menu():
     print("[3] DERRUBAR BANCO DE DADOS (Queda total / Alerta SMTP)")
     print("[4] INJETAR VULNERABILIDADE (DNS KeyTrap)")
     print("[5] SIMULAR INUNDAÇÃO SMTP (Spam / Email Bombing)") 
+    print("[6] SIMULAR ALTERAÇÃO DE CONFIGURAÇÃO (Integridade de Arquivo)") 
     print("[0] Sair")
     print("="*40)
 
@@ -163,17 +164,17 @@ while True:
             "web": {"availability": 1.0, "latency": 45.0, "rps": 120.0, "error_rate": 0.0, "open_connections": 25.0},
             "database": {"availability": 1.0, "qps": 90.0, "cpu_usage": 15.5, "slow_queries": 0.0, "open_connections": 12.0, "db_size": 12.450, "error_rate": 0.0},
             "dns": {
-                "availability": 0.0,            # Card do DNS fica vermelho (Crítico)
-                "latency": 5200.0,             # Tempo de Resposta (ms) explode verticalmente
-                "qps": 5.0,                    # Consultas aceitas despencam porque ele está travado
-                "failed_resolutions": 150.0    # Gráfico de Falhas/s dá um salto gigante para o topo
+                "availability": 0.0,            
+                "latency": 5200.0,             
+                "qps": 5.0,                    
+                "failed_resolutions": 150.0    
             },
             "smtp": {"availability": 1.0, "latency": 95.0, "delivery_rate": 100.0, "queue_length": 0.0, "error_rate": 0.0}
         }
         enviar_metricas_api(infra_dns_attack)
         requests.post(URL_SEGURANCA, json={
             "event_type": "vuln",
-            "severity": "CRIT",                # Mudamos para CRIT para combinar com o card vermelho!
+            "severity": "CRIT",                
             "service": "DNS (BIND9)",
             "description": "Exploitation da CVE-2023-50387 (KeyTrap) detectada. CPU em 100% por exaustão criptográfica DNSSEC.",
             "source_ip": "198.51.100.77"
@@ -204,6 +205,17 @@ while True:
             "source_ip": "46.138.200.11"
         })
         print("🔥 Inundação SMTP injetada com sucesso! Veja os gráficos do e-mail reagirem.")
+
+    elif opcao == "6":
+        print("\n🔍 [INTEGRIDADE] Detectada alteração não autorizada em arquivo de configuração de rede...")
+        requests.post(URL_SEGURANCA, json={
+            "event_type": "config", 
+            "severity": "WARN",
+            "service": "Nginx / Web Server",
+            "description": "Modificação não autorizada detectada no arquivo /etc/nginx/nginx.conf. Hash MD5 do arquivo original violado!",
+            "source_ip": "10.0.0.15"
+        })
+        print("🛡️ Alerta de quebra de integridade de configuração injetado!")
 
     elif opcao == "0":
         break

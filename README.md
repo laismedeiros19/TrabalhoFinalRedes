@@ -1,81 +1,86 @@
 # 🌐 NetWatch — Plataforma de Monitoramento de Rede e Resposta a Incidentes
 
 **Contexto Acadêmico:** Instituto de Desenvolvimento e Pesquisa (IDP)
-**Disciplina:** Redes de Computadores
+**Disciplina:** Redes de Computadores e Internet
 **Orientadora:** Prof.ª Lorena Borges
-**Alunas:** Lais Medeiros e Gabriela Suares
+**Autor:** Laís Gabrielly Vital Medeiros
 **Ano:** 2026
 
 ---
 
 ## 📝 Descrição do Projeto
 
-O **NetWatch** é um ecossistema de telemetria e monitoramento de infraestrutura distribuída em tempo real. O sistema foi projetado para coletar, persistir e renderizar métricas vitais de quatro serviços essenciais de rede (Web Server, Banco de Dados, DNS e SMTP), além de atuar ativamente na auditoria de segurança e resposta automatizada a incidentes (NOC/SOC Alerting) via simulação de envelopes de rede do protocolo SMTP.
+O **NetWatch** é um ecossistema de telemetria, auditoria de segurança e monitoramento de infraestrutura distribuída em tempo real. Projetado para coletar, persistir e renderizar métricas de quatro serviços essenciais de rede (Web Server, Banco de Dados, DNS e SMTP), o sistema atua ativamente na detecção de anomalias, análise de vulnerabilidades conhecidas por serviço e resposta automatizada a incidentes (NOC/SOC Alerting) via simulação de logs do protocolo SMTP.
 
 ---
 
 ## 🏗️ Arquitetura e Engenharia do Sistema
 
-O projeto é dividido em três camadas principais operando de forma assíncrona:
+O projeto é estruturado em três camadas assíncronas independentes:
 
-1. **Backend (API REST):** Desenvolvido em **FastAPI (Python)** e estruturado com persistência em banco de dados relacional **SQLite**. Ele expõe endpoints para recebimento de métricas (`/api/metrics`) e logs de segurança (`/api/security`), processando regras de limiares operacionais (*thresholds*).
-2. **Frontend (Dashboard):** Uma interface rica de visualização construída com **HTML5 estrutural, CSS3 (variáveis modernas) e JavaScript Vanilla**. Utiliza a biblioteca **Chart.js** para renderização de gráficos temporais de linhas com eixos dinâmicos reativos.
-3. **Agente (Controlador de Incidentes):** Um script em Python responsável por injetar cargas de telemetria e simular anomalias de redes complexas para validação do ecossistema.
+1. **Backend (API REST):** Desenvolvido em **FastAPI (Python)** com persistência de dados em banco relacional **SQLite** (`devops_monitor.db`). É responsável por receber as telemetrias, avaliar os limiares operacionais (*thresholds*) de alerta e disparar gatilhos automáticos.
+2. **Frontend (Dashboard):** Uma interface rica em detalhes visuais construída em **HTML5, CSS3 modernos e JavaScript Vanilla**. Utiliza a biblioteca **Chart.js** para plotagem temporal reativa e eixos dinâmicos.
+3. **Agente (Controlador de Incidentes):** Um orquestrador em Python (`controlador.py`) encarregado de injetar cargas de rede e simular os ataques cibernéticos e panes para validação do ecossistema.
 
 ---
 
 ## 🚨 Cenários de Redes e Segurança Simulados
 
-O painel interativo permite injetar 5 estados distintos para avaliar o comportamento do monitoramento:
+O painel interativo do controlador permite alternar entre **6 cenários distintos** para testar a resiliência do monitoramento:
 
 ### [1] Estado Normal (Baseline)
 
-- **Comportamento:** Todos os ativos operando nos níveis ideais de SLA. O dashboard renderiza cartões em verde e status `OK`.
-- **Métricas:** Latência Web estável (~45ms), tráfego balanceado e zero falhas.
+- **Comportamento:** Todos os ativos operando nos níveis ideais de SLA. Os cartões da visão consolidada exibem o status `OK` em verde.
+- **Métricas:** Latência Web estável (~45ms), RPS flutuando de forma realista (110–135) e zero falhas de rede.
 
 ### [2] Ataque DDoS de Camada 7 (Web Server Flood)
 
-- **Comportamento:** Simulação de um bombardeio volumétrico de requisições maliciosas.
-- **Métricas:** O tráfego de **RPS (Requisições por Segundo)** explode para mais de 95.000, a **Latência** vai ao teto (~4500ms) e a disponibilidade cai para 0, alterando o status do painel para `CRÍTICO`.
-- **Segurança:** Injeta um log de auditoria isolando o IP do atacante.
+- **Comportamento:** Simulação de um bombardeio volumétrico massivo contra o servidor de aplicação.
+- **Métricas:** O tráfego de **RPS (Requisições por Segundo)** explode para a faixa de 95.000 a 105.000, a **Latência** vai ao teto (~4500ms) e a disponibilidade cai para `0%`, alterando o status do painel para `CRÍTICO`.
+- **Segurança:** O feed registra a anomalia isolando o IP de origem do atacante.
 
-### [3] Ataque de Força Bruta e Pane Seca (Database Downtime)
+### [3] Força Bruta e Queda de Serviço (Database Downtime)
 
-- **Comportamento:** Simulação de um ataque *Brute-force* contra o usuário `root` na porta padrão `3306`. O estouro de conexões simultâneas esgota os recursos, derrubando o banco.
-- **Métricas:** **QPS (Consultas por Segundo)** e **Uso de CPU** despencam verticalmente para `0.0`.
-- **Gatilho de Alerta:** O backend detecta a violação do limiar e gera no console o log técnico estruturado do **envelope do protocolo SMTP (RFC 5322)**, simulando a notificação imediata da equipe de suporte.
+- **Comportamento:** Ataque de *Brute-force* contra o usuário `root` na porta padrão `3306`. O esgotamento de recursos força a queda deliberada do banco.
+- **Métricas:** As métricas de **QPS (Consultas por Segundo)** e **Uso de CPU** despencam instantaneamente para `0.0`.
+- **Notificação SMTP:** O backend detecta a indisponibilidade e renderiza no console o log técnico de transmissão do envelope estruturado do protocolo **SMTP (RFC 5322)**, simulando o alerta imediato enviado ao time de DevOps (NOC).
 
 ### [4] Exaustão Criptográfica DNS (CVE-2023-50387 - KeyTrap)
 
-- **Comportamento:** Exploração de uma vulnerabilidade lógica real no protocolo **DNSSEC** dentro do servidor **BIND9**. O envio de assinaturas inválidas cruzadas coloca o processador do servidor em loop infinito.
-- **Métricas:** O tempo de resposta estoura para 5200ms e o gráfico de **Falhas/s** dá um salto vertical na tela.
+- **Comportamento:** Exploração de uma vulnerabilidade lógica real no protocolo **DNSSEC** dentro do servidor **BIND9**. O envio de pacotes maliciosos com assinaturas cruzadas inválidas trava a CPU do servidor de nomes.
+- **Métricas:** O tempo de resposta de resolução salta para `5200ms` e o gráfico de **Falhas/s** dá um pico vertical de `150.0` falhas na tela.
 
-### [5] Inundação SMTP (Email Bombing / Spam)
+### [5] Inundação SMTP (Email Bombing / Spam Massivo)
 
-- **Comportamento:** Ataque de negação de serviço direcionado ao Mail Transfer Agent (MTA).
-- **Métricas:** A fila de mensagens (*Queue Length*) acumula milhares de e-mails presos, a taxa de entrega legítima cai para `18.5%` e o volume por minuto vai ao topo.
+- **Comportamento:** Ataque DoS direcionado ao Mail Transfer Agent (MTA) para estrangular o fluxo de saída de e-mails.
+- **Métricas:** A fila de mensagens (*Queue Length*) acumula `4.850` e-mails presos no backlog, a taxa de entrega legítima desce para `18.5%` e o volume por minuto atinge o pico anômalo de `950 e-mails/m`.
+
+### [6] Alteração de Configuração (Integridade de Arquivos)
+
+- **Comportamento:** Monitoramento de integridade focado na detecção de mudanças não autorizadas em arquivos críticos de infraestrutura (FIM).
+- **Segurança:** O agente simula a quebra de hash criptográfico **MD5** do arquivo `/etc/nginx/nginx.conf`. O painel incrementa o contador global de configurações alteradas para `1` e adiciona um alerta de nível `ATENÇÃO` no feed de auditoria.
 
 ---
 
-## ⚙️ Como Executar o Projeto (Guia de Implantação)
+## ⚙️ Como Executar o Ecossistema (Guia de Implantação)
 
-Para rodar o ecossistema, certifique-se de ter as dependências instaladas (`pip install fastapi uvicorn requests`) e abra **três terminais separados** no seu ambiente de desenvolvimento:
+Para rodar a plataforma localmente ou no GitHub Codespaces, garanta que possui as dependências instaladas (`pip install fastapi uvicorn requests`) e inicie **três terminais separados**:
 
-### Terminal 1 — Servidor de API (Backend)
+### Terminal 1 — API REST (Backend)
 
 ```bash
 uvicorn backend.app.main:app --reload --port 8000
 ```
 
-> **Nota:** Se estiver utilizando o GitHub Codespaces, altere a visibilidade da porta 8000 para "Pública" na aba **Ports**.
+> **Nota:** No GitHub Codespaces, lembre-se de alterar a visibilidade da porta 8000 para "Pública" na aba **Ports**.
 
-### Terminal 2 — Servidor Web Estático (Frontend)
+### Terminal 2 — Dashboard Web (Frontend)
 
 ```bash
 python3 -m http.server 3000 --directory frontend
 ```
 
-### Terminal 3 — Orquestrador de Ataques (Agente)
+### Terminal 3 — Injetor de Ataques (Agente)
 
 ```bash
 python3 agents/controlador.py
@@ -83,11 +88,11 @@ python3 agents/controlador.py
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias e Protocolos Utilizados
 
-| Categoria | Tecnologias |
+| Categoria | Detalhes |
 |---|---|
-| **Linguagens** | Python 3.12, JavaScript (ES6+), HTML5, CSS3 |
-| **Frameworks / Libs** | FastAPI, Uvicorn, Chart.js (v4) |
-| **Banco de Dados** | SQLite (com SQLAlchemy / Driver Nativo) |
-| **Protocolos** | HTTP/HTTPS, SMTP (Transmissão de Alertas), DNS/DNSSEC (Validação de Chaves) |
+| **Linguagens** | Python 3.12, JavaScript (ES6+), HTML5, CSS3 (Custom Properties) |
+| **Frameworks e Bibliotecas** | FastAPI (Python), Chart.js v4 (Gráficos), Uvicorn (Servidor ASGI) |
+| **Persistência** | SQLite3 com mapeamento relacional |
+| **Conceitos de Redes** | HTTP (Chamadas da API), DNSSEC (Validação de chaves), SMTP (Mensageria e envelopes de alerta), Análise de Vulnerabilidades (CVEs) |
