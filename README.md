@@ -3,7 +3,7 @@
 **Contexto Acadêmico:** Instituto de Desenvolvimento e Pesquisa (IDP)
 **Disciplina:** Redes de Computadores e Internet
 **Orientadora:** Prof.ª Lorena Borges
-**Autor:** Laís Gabrielly Vital Medeiros
+**Autor:** Laís Medeiros e Gabriela Suares
 **Ano:** 2026
 
 ---
